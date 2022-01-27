@@ -1,0 +1,161 @@
+const get = (id) => document.getElementById(id);
+
+const serial = get("serial");
+const service = get("service");
+const price = get("price");
+const submit = get("submit");
+
+const model = get("model");
+const type = get("type");
+const status = get("status");
+
+
+serial.disabled = true; service.disabled = true; price.disabled = true; type.disabled = true; model.disabled = true;
+
+if(type.value.includes("iRemoval") || type.value.includes("SUPPORTED") || type.value.includes("Device Not Supported") || type.value.includes("Device Already Registered")){
+    if(price.value == "Total Price: $100"){
+        price.value = "Total Price: UNSUPPORTED!";
+    }
+    var xNulled = type.value.replace("Status: ", "");
+    switch(xNulled){
+        case "Not checked with iRemoval":
+            submit.disabled = true;
+            submit.innerHTML = "Device NOT Checked";
+            setTimeout(() => {
+                swal({
+                    title: "Device Not Checked",
+                    text: `Your device has not been checked by iRemovalPRO tool... \n\nPlease Download iRemovalPRO tool Then jailbreak device and connect it to tool.. after that refresh this page. \n\nClick "OK" to download the tool`,
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: false,
+                  })
+                  .then((download) => {
+                    if (download) {
+                        window.open("https://mega.nz/file/MslVlQKB#Mpa6YKnQTs82E4NEe-GY0oLcWSFASkL1d-PVX6sTeO4");
+                    }
+                  });
+            }, 2000);
+        break;
+
+        case "Device Not Supported":
+            submit.disabled = true;
+            submit.innerHTML = "Device NOT Supported";
+            swal("Device Not Supported", "Your device is NOT supported for MEID/GSM Bypass with signal. \n\nPlease go back to home page and order MEID No Signal Bypass. \n\nNOTE: YOU WILL NOT GET SIGNAL!!1", "error");
+        break;
+
+        case "Device Already Registered":
+            submit.disabled = true;
+            submit.innerHTML = "Device Already Registered";
+            swal("Device Already Registered", "Your device is already registered to iRemovalPRO tool!", "success");
+        break;
+
+        case "Device SUPPORTED":
+            submit.disabled = false;
+        break;
+
+        case "Check Failed":
+            submit.disabled = true;
+            submit.innerHTML = "Check Failed";
+            swal("Internal Server Error", "Please refresh this page. \n\nIf you still encounter this error after refresh please contact me on Telegram: https://t.me/tedddby", "error");
+        break;
+    }
+}else{
+    if(typeof(model) != 'undefined' && model != null){
+        model.disabled = true; type.disabled = true;
+    
+        if(type.value.includes("MEID") && service.value.includes("GSM")){
+            setTimeout(() => {
+            alert("This is MEID device, Not supported for GSM Bypass!");
+            submit.innerHTML = "Not Supported!";
+            submit.disabled = true;
+          }, 2000);
+        }else{
+            type.value = "GSM Bypass (iOS 12.2 till 14.5.1)"
+        }
+    
+        if(type.value.includes("GSM") && service.value.includes("MEID")){
+            type.value = "No Signal Bypass (iOS 12.2 till 14.8)"
+        }
+    }
+    
+    if(typeof(status) != 'undefined' && status != null){
+        status.disabled = true; status.disabled = true;
+    }
+}
+
+////////////real checkout //////////////
+
+var stripe = "";
+
+if(service.value == "Service: MEID/GSM Bypass With Signal"){
+    stripe = Stripe("pk_live_51JyuXyCpOvd0OAa1dSHyZtp1EkqWweBig4ikcGjueC58vwXdyhqi5USUKMT0TILKRFaavypCBThryma1cGMqPQDr000R1TP9hN");
+}else{
+    stripe = Stripe("pk_live_51JS5eFDJCYp3oML13Lkal4728vX0IVmjnsDoZNwdoDW1XWrCqkKiQazKLUR8pVNv58KIczOFomBUUtfhHopixu0c00blNmprAq");
+}
+
+submit.addEventListener("click", () => {
+    if(get("ckb1").checked == false){
+        return alert(`Please check "I confirm this is my device" box to proceed to payment`);
+    }
+    fetch("../stripe/session", {method:"post"})
+    .then(res => res.json())
+    .then(data => {
+        if(data.failed){
+            alert("Security Token Missing From Your Request!");
+            return false;
+        }else{
+            if(data.id){
+                return stripe.redirectToCheckout({ sessionId: data.id });
+            }else{
+                return false;
+            }
+        }
+    })
+    .then(result => {
+        if(result.error){
+            return alert(result.error.message);
+        }
+    })
+    .catch(err => {
+        return alert("Server Error "+err);
+    })
+});
+
+////////////////////////////DISABLE ctrl U //////////////////////////////
+document.addEventListener("contextmenu", event => event.preventDefault());
+document.onkeypress = function (event)
+{
+	event = event || window.event;
+	if (event.keyCode == 123)
+	{
+		return false
+	}
+};
+document.onmousedown = function (event)
+{
+	event = event || window.event;
+	if (event.keyCode == 123)
+	{
+		return false
+	}
+};
+document.onkeydown = function (event)
+{
+	event = event || window.event;
+	if (event.keyCode == 123)
+	{
+		return false
+	}
+};
+jQuery(document).ready(function ($)
+{
+	$(document).keydown(function (event)
+	{
+		var pressedKey = String.fromCharCode(event.keyCode).toLowerCase();
+		if (event.ctrlKey && pressedKey == "u")
+		{
+			return false
+		}
+	})
+});
+////////////////////EOF/////////////////////////////////

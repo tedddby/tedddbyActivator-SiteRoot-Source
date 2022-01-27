@@ -1,0 +1,185 @@
+const get = (id) => document.getElementById(id);
+
+const upCase = (data, button) => {
+    var current = get(data).value;
+    var newCont = current.toUpperCase();
+    get(data).value = newCont;
+
+    if(newCont.length !== 12){
+        get(button).disabled = true;
+        var getVal = get(button).value.split(" ");
+        get(button).value = getVal[0]+" "+getVal[1]+" ("+newCont.length+")";
+    }else{
+        if(newCont.length == 12){
+            get(data).disabled = true;
+            get(button).disabled = false;
+            get(button).value = "Continue >>>";
+        }
+    }
+
+    if(newCont.length == 0){
+        get(button).value = "Register Serial";
+    }
+} 
+
+const gsm = get("gsm");
+const meid = get("meid");
+const meidsim = get("meidsim");
+const mdm = get("mdm");
+
+gsm.addEventListener('input', ()=> upCase("gsm", "buttonGsm"));
+meid.addEventListener('input', ()=> upCase("meid", "buttonMeid"));
+meidsim.addEventListener('input', ()=> upCase("meidsim", "buttonMeidsim"));
+mdm.addEventListener('input', ()=> upCase("mdm", "buttonMdm"));
+
+const gsmButton = get("buttonGsm");
+const meidButton = get("buttonMeid");
+const meidsimButton = get("buttonMeidsim");
+const mdmButton = get("buttonMdm");
+
+gsmButton.addEventListener('click', ()=> redirect("gsm"));
+meidButton.addEventListener('click', ()=> redirect("meid"));
+meidsimButton.addEventListener('click', ()=> redirect("meidsim"));
+mdmButton.addEventListener('click', ()=> redirect("mdm"));
+
+const redirect = (service) => {
+    var serial;
+    var ser;
+    switch(service){
+        case "gsm":
+            serial = "GS-"+gsm.value;
+            ser = "GsmBypass";
+            break;
+        
+        case "meid":
+            serial = "ME-"+meid.value;
+            ser = "MEIDBypass";
+            break;
+
+        case "meidsim":
+            serial = "MS-"+meidsim.value;
+            ser = "meidsimBypass";
+            break;
+        
+        case "mdm":
+            serial = "MD-"+mdm.value;
+            ser="MDMBypass"
+            break;
+
+        default:
+            return false;
+            break;
+    }
+
+    verifySerial(serial, service, ser);
+}
+
+const verifySerial = (serial, service, ser) => {
+    if(serial.length !== 15 || serial.includes("-") == false){
+        return false;
+    }else{
+        fetch("./verification/serial/"+serial, {method:"post"})
+        .then(res => res.json())
+        .then(data => {
+                var obj = data;
+                if(obj.status == "success"){
+                    var first = service.charAt(0).toUpperCase() + service.slice(1);
+                    var wrap = "wrap"+first;
+                    if(obj.type){
+                        //gsm/meid/mdm
+                        get(wrap).innerHTML = `<br><div class="lds-dual-ring"></div>`;
+                        setTimeout(() => {
+                            get(wrap).innerHTML = `&nbsp<small style="color:white;">Redirecting to checkout...</small>&nbsp`;
+                        }, 3000);
+
+                        setTimeout(() => {
+                            window.location.assign("/checkout");
+                        }, 5000);
+                    }else{
+                    var first = service.charAt(0).toUpperCase() + service.slice(1);
+                    var wrap = "wrap"+first;
+                      if(obj.html){
+                          if(obj.html.includes("OFF")){
+                            get(wrap).innerHTML = `<br><div class="lds-dual-ring"></div>`; 
+
+                            setTimeout(() => {
+                                get(wrap).innerHTML = `&nbsp<small>Redirecting to checkout...</small>&nbsp`;
+                            }, 3000);
+    
+                            setTimeout(() => {
+                                window.location.assign("/checkout");
+                            }, 5000);
+
+                            }else{
+                            get(wrap).innerHTML = `<br><div class="lds-dual-ring"></div>`; 
+
+                            setTimeout(() => {
+                                get(wrap).innerHTML = obj.html.replace(serial.split("-")[1], "");
+                                get(wrap).innerHTML+=`<br><small>Please turn FMI OFF First!</small>`
+                            }, 3000);
+                        }
+                      }  
+                    }
+                }else{
+                    var first = service.charAt(0).toUpperCase() + service.slice(1);
+                    var wrap = "wrap"+first;
+
+                    get(wrap).innerHTML = `<p style="color:white;">Verification Failed: Invalid Serial Number</p>`;
+                    setTimeout(() => {
+                        get(wrap).innerHTML = `<form method="post" action="javascript::void(0)">
+                        <input type="text" name="SerialNumber" id="${service}" oninput="upCase('${service}', 'button${first}')" placeholder="Serial Number" pattern="[A-Za-z0-9]{12}" style="border-style:solid;border-color:#5846f9;border-width:thin;" required=""><Br>
+                        <input type="checkbox" id="cond${first}" name="conditions" value="I CONFIRM IM AGREE" required="">
+                        <label for="confirmGSM"><a href="#about">I accept conditions</a></label><br>
+                        <input type="submit" id="button${first}" onclick="redirect('${service}')" value="Register Serial" class="btn-buy">
+                      </form>`
+                    }, 4000)
+                }
+        })
+    }
+}
+
+function load(response, urlPath){
+    document.getElementById("cont").innerHTML = response.html;
+    document.title = response.pageTitle;
+    window.history.pushState({"html":response.html,"pageTitle":response.pageTitle},"", urlPath);
+}
+
+
+////////////////////////////DISABLE ctrl U //////////////////////////////
+document.addEventListener("contextmenu", event => event.preventDefault());
+document.onkeypress = function (event)
+{
+	event = event || window.event;
+	if (event.keyCode == 123)
+	{
+		return false
+	}
+};
+document.onmousedown = function (event)
+{
+	event = event || window.event;
+	if (event.keyCode == 123)
+	{
+		return false
+	}
+};
+document.onkeydown = function (event)
+{
+	event = event || window.event;
+	if (event.keyCode == 123)
+	{
+		return false
+	}
+};
+jQuery(document).ready(function ($)
+{
+	$(document).keydown(function (event)
+	{
+		var pressedKey = String.fromCharCode(event.keyCode).toLowerCase();
+		if (event.ctrlKey && pressedKey == "u")
+		{
+			return false
+		}
+	})
+});
+////////////////////EOF/////////////////////////////////
