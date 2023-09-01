@@ -3,6 +3,7 @@ const request = require("request");
 const jwt = require("jsonwebtoken");
 const ms_pricing = require("./pricing");
 const fetch = require("node-fetch");
+const fmi_pricing = require("./fmi_pricing");
 
 env.config({
     path:"./sec.env"
@@ -26,10 +27,17 @@ const VerifySerial = (req, res) => {
         switch(identifier){
             case "GS":
                 url = "https://api.ifreeicloud.co.uk";
+                service = "FmiOff";
+                jwtService = "FMI OFF";
+                price = 222;
+            break;
+
+            /*case "GS":
+                url = "https://api.ifreeicloud.co.uk";
                 service = "GsmBypass";
                 jwtService = "GSM Bypass";
                 price = 10;
-            break;
+            break;*/
 
             case "ME":
                 url = "https://api.ifreeicloud.co.uk";
@@ -60,7 +68,7 @@ const VerifySerial = (req, res) => {
         if(url == null || service == 0){
             return res.status(401).json({status:"unknow service"});
         }else{
-        if(identifier !== "MS"){
+        if(identifier !== "MS" && identifier !== "GS"){
             request.post(url, {
                 form:{
                     key:envData.iFreeKey,
@@ -122,61 +130,113 @@ const VerifySerial = (req, res) => {
                 }
             })
         }else{
-
-            //== M E I D -- S I G N A L ==//
-
-            request.post({
-                url:url,
-                form:{
-                    key:envData.iFreeKey,
-                    service:0,
-                    imei:serial.split("-")[1]
-                }
-            }, (err, resp, body) => {
-                if(err){
-                    return res.status(500).json({
-                        status:"server error"
-                    })
-                }else{
-                    if(resp.statusCode !== 200){
-                        return res.status(resp.statusCode).json({
-                            status:"request rejected"
-                        });
+            if(identifier == "GS"){
+                request.post({
+                    url:url,
+                    form:{
+                        key:envData.iFreeKey,
+                        service:0,
+                        imei:serial.split("-")[1]
+                    }
+                }, (err, resp, body) => {
+                    if(err){
+                        return res.status(500).json({
+                            status:"server error"
+                        })
                     }else{
-                        var obj = JSON.parse(body); //var parsed = JSON.parse(data);
-                        var finalResp;
-                        var token;
-
-                        if(obj.success == true){
-                              finalResp = {
-                                serial:obj.object.serial,
-                                model:obj.object.model,
-                                type:"MEID/GSM",
-                                status:"success"
-                            }
-
-                            token = jwt.sign({
-                                Service:jwtService,
-                                SerialNumber:serial.split("-")[1],
-                                Price:ms_pricing.setPrice(obj.object.model),
-                                Model:obj.object.model,
-                                Type:"MEID/GSM"
-                            }, 
-                            envData.jwtKey,
-                            {
-                                expiresIn:"1h"
+                        if(resp.statusCode !== 200){
+                            return res.status(resp.statusCode).json({
+                                status:"request rejected"
                             });
                         }else{
-                            finalResp = {status: "failed"};
+                            var obj = JSON.parse(body); //var parsed = JSON.parse(data);
+                            var finalResp;
+                            var token;
+    
+                            if(obj.success == true){
+                                  finalResp = {
+                                    serial:obj.object.serial,
+                                    model:obj.object.model,
+                                    type:"FMI OFF",
+                                    status:"success"
+                                }
+    
+                                token = jwt.sign({
+                                    Service:jwtService,
+                                    SerialNumber:serial.split("-")[1],
+                                    Price:fmi_pricing.setPrice(obj.object.model),
+                                    Model:obj.object.model,
+                                    Type:"FMI OFF"
+                                }, 
+                                envData.jwtKey,
+                                {
+                                    expiresIn:"1h"
+                                });
+                            }else{
+                                finalResp = {status: "failed"};
+                            }
+                            res.cookie("checkout", token, {
+                                expires:new Date(Date.now() + 60 * 60 * 1000),
+                                httpOnly:true
+                            });
+                            return res.status(200).json(finalResp);
                         }
-                        res.cookie("checkout", token, {
-                            expires:new Date(Date.now() + 60 * 60 * 1000),
-                            httpOnly:true
-                        });
-                        return res.status(200).json(finalResp);
                     }
-                }
-            })
+                })
+            }else{
+                request.post({
+                    url:url,
+                    form:{
+                        key:envData.iFreeKey,
+                        service:0,
+                        imei:serial.split("-")[1]
+                    }
+                }, (err, resp, body) => {
+                    if(err){
+                        return res.status(500).json({
+                            status:"server error"
+                        })
+                    }else{
+                        if(resp.statusCode !== 200){
+                            return res.status(resp.statusCode).json({
+                                status:"request rejected"
+                            });
+                        }else{
+                            var obj = JSON.parse(body); //var parsed = JSON.parse(data);
+                            var finalResp;
+                            var token;
+    
+                            if(obj.success == true){
+                                  finalResp = {
+                                    serial:obj.object.serial,
+                                    model:obj.object.model,
+                                    type:"MEID/GSM",
+                                    status:"success"
+                                }
+    
+                                token = jwt.sign({
+                                    Service:jwtService,
+                                    SerialNumber:serial.split("-")[1],
+                                    Price:ms_pricing.setPrice(obj.object.model),
+                                    Model:obj.object.model,
+                                    Type:"MEID/GSM"
+                                }, 
+                                envData.jwtKey,
+                                {
+                                    expiresIn:"1h"
+                                });
+                            }else{
+                                finalResp = {status: "failed"};
+                            }
+                            res.cookie("checkout", token, {
+                                expires:new Date(Date.now() + 60 * 60 * 1000),
+                                httpOnly:true
+                            });
+                            return res.status(200).json(finalResp);
+                        }
+                    }
+                })
+            }
         }
     }
     }
@@ -256,4 +316,41 @@ const VerifyCheckout = async (req, res, next) => {
     }
 }
 
-module.exports = {VerifySerial, VerifyCheckout}
+const ModifyCookieAddSoldBy = async (req,res) => {
+    if(req.cookies.checkout){
+        //console.log(req.body);
+        if(req.body.soldby){
+            try{
+                const decoded = await promisify(jwt.verify)(req.cookies.checkout, envData.jwtKey);
+    
+                token = jwt.sign({
+                    Service:decoded.Service,
+                    SerialNumber:decoded.SerialNumber,
+                    Price:decoded.Price,
+                    Model:decoded.Model,
+                    Type:decoded.Type,
+                    SoldBy:req.body.soldby
+                }, 
+                envData.jwtKey,
+                {
+                    expiresIn:"1h"
+                });
+    
+                res.cookie("checkout", token, {
+                    expires:new Date(Date.now() + 60 * 60 * 1000),
+                    httpOnly:true
+                });
+                
+                return res.status(200).json({msg:"success"});
+            }catch{
+                return res.status(400).json({msg:"Internal server error"});
+            }
+        }else{
+            return res.status(400).json({msg:"Mo valid soldby"});
+        }
+    }else{
+        return res.status(400).json({msg:"No valid cookie"});
+    }
+}
+
+module.exports = {VerifySerial, VerifyCheckout, ModifyCookieAddSoldBy}

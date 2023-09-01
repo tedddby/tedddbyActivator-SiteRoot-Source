@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Start your development with a Dashboard for Bootstrap 4.">
+  <meta name="author" content="Creative Tim">
+  <title>tedddby - FMI OFF</title>
+  <!-- Favicon -->
+  <link rel="icon" href="../fmi-assets/img/brand/icon.png" type="image/png">
+  <!-- Fonts -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
+  <!-- Icons -->
+  <link rel="stylesheet" href="../fmi-assets/vendor/nucleo/css/nucleo.css" type="text/css">
+  <link rel="stylesheet" href="../fmi-assets/vendor/@fortawesome/fontawesome-free/css/all.min.css" type="text/css">
+  <!-- Argon CSS -->
+  <link rel="stylesheet" href="../fmi-assets/css/argon.css?v=1.2.1" type="text/css">
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+
+<body class="bg-default">
+  <!-- Navbar -->
+
+  <!-- Main content -->
+  <div class="main-content">
+    <!-- Header -->
+    <div class="header bg-gradient-primary py-7 py-lg-8 pt-lg-9">
+      <div class="separator separator-bottom separator-skew zindex-100">
+        <svg x="0" y="0" viewBox="0 0 2560 100" preserveAspectRatio="none" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <polygon class="fill-default" points="2560 0 2560 100 0 100"></polygon>
+        </svg>
+      </div>
+    </div>
+    <!-- Page content -->
+    <div class="container mt--8 pb-5">
+      <div class="row justify-content-center">
+        <div class="col-lg-5 col-md-7">
+          <div class="card bg-secondary border-0 mb-0">
+            <div class="card-body px-lg-5 py-lg-5">
+              <div class="text-center text-muted mb-4">
+                <small id="model">{{model}}</small>
+              </div>
+              <form role="form" id="checkoutForm">
+                <div class="form-group mb-3">
+                  <div class="input-group input-group-merge input-group-alternative">
+                    <input class="form-control" placeholder="Device Serial" type="text" id="serial" value="Serial Number = {{serial}}" disabled>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="input-group input-group-merge input-group-alternative">
+                    <input class="form-control" placeholder="Amount Due" type="text" id="price" value="Amount Due = {{price}}$" disabled>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="input-group input-group-merge input-group-alternative">
+                    <textarea class="form-control" placeholder="Paste sold-by check here please." type="text" id="soldby" name="soldby"></textarea>
+                  </div>
+                  <div class="text-left text-muted mb-4" id="buysoldby">
+                      <small>Don't have a sold-by check? - <a href="https://ifreeicloud.co.uk/sold-by-s3">click here!</a></small>
+                      <br>
+                      <small>(*) After opening the link select this service "$2.950 -  Sold By + ♻ + Cases ⚡"</small>
+                    </div>
+                </div>
+
+                <div class="form-group" id="checkoutFormw"></div>
+                <div class="form-group" id="status_div"></div>
+
+                <div class="custom-control custom-control-alternative custom-checkbox">
+                  <input class="custom-control-input" id="confirmCheck" type="checkbox">
+                  <label class="custom-control-label" for="confirmCheck">
+                    <span class="text-muted">I confirm this is my device</span>
+                  </label>
+                </div>
+                <div class="text-center">
+                  <button type="button" class="btn btn-primary my-4" id="payButton">Proceed to payment - {{price}}$</button>
+                  <div class="alert alert-danger alert-dismissible fade show" role="alert" id="error_alert" style='display:none;'>
+                    <span class="alert-text" id="error_text"></span>
+                  </div>
+                  <div class="alert alert-success alert-dismissible fade show" role="alert" id="success_alert" style='display:none;'>
+                    <span class="alert-text" id="success_text"></span>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <div class="text-center text-muted mb-4">
+                      <small>NOTICE - If device unlock fails or device is not unlocked within 3 weeks (21 days) refund will be automatically issued to your bank account.</small>
+                    </div>
+                </div>
+
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Footer -->
+  <footer class="py-5" id="footer-main">
+    <div class="container">
+      <div class="row align-items-center justify-content-xl-between">
+        <div class="col-xl-6">
+          <div class="copyright text-center text-xl-left text-muted">
+            &copy; 2023 <a href="https://tedddby.com" class="font-weight-bold ml-1" target="_blank">tedddbyActivator</a>
+          </div>
+        </div>
+        <div class="col-xl-6">
+          <ul class="nav nav-footer justify-content-center justify-content-xl-end">
+            <li class="nav-item">
+              <a href="https://tedddby.com" class="nav-link" target="_blank">tedddbyActivator</a>
+            </li>
+            <li class="nav-item">
+              <a href="https://tedddby.com/#about" class="nav-link" target="_blank">About Us</a>
+            </li>
+            <li class="nav-item">
+              <a href="https://tedddby.com/privacy" class="nav-link" target="_blank">Privacy Policy</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <!-- Argon Scripts -->
+  <!-- Core -->
+  <script src="../fmi-assets/vendor/jquery/dist/jquery.min.js"></script>
+  <script src="../fmi-assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../fmi-assets/vendor/js-cookie/js.cookie.js"></script>
+  <script src="../fmi-assets/vendor/jquery.scrollbar/jquery.scrollbar.min.js"></script>
+  <script src="../fmi-assets/vendor/jquery-scroll-lock/dist/jquery-scrollLock.min.js"></script>
+  <!-- Argon JS -->
+  <script src="../fmi-assets/js/argon.js?v=1.2.1"></script>
+  <script>
+    var form = document.getElementById("checkoutFormw");
+    var status_div = document.getElementById("status_div");
+    var buysoldby = document.getElementById("buysoldby");
+    var soldby = document.getElementById("soldby");
+    var payButton = document.getElementById("payButton");
+    var confirmCheck = document.getElementById("confirmCheck");
+
+    payButton.disabled = true;
+    confirmCheck.disabled = true;
+
+    $('#soldby').bind('paste', function(e){ 
+
+      buysoldby.outerHTML = "";
+      setTimeout(generateFromSoldBy, 100);
+      
+     })
+
+     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+     function toJson(data){
+
+      const result = {};
+      let dataKey;
+      data.split('\n').forEach(oneLine => {
+        dataKey = oneLine.split(':');
+        result[dataKey[0]] = dataKey[1];
+      });
+
+      return JSON.stringify(result);
+     }
+
+     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+     function generateFromSoldBy(){
+
+        soldby.disabled = true;
+
+        var soldbyInitialValue = JSON.parse(toJson(soldby.value.toLowerCase()));
+        var soldbyFinalValue = {};
+
+      for(i=0; i < Object.keys(soldbyInitialValue).length; i++){
+        var oldKey = Object.keys(soldbyInitialValue)[i]; 
+        var newKey = Object.keys(soldbyInitialValue)[i].replace(/\s/g,"");
+        soldbyFinalValue[''+newKey+''] = soldbyInitialValue[oldKey];
+      }
+
+        var purchaseDate = soldbyFinalValue.purchasedate;
+        var icloudStatus = soldbyFinalValue.icloudstatus;
+        var icloudLock = soldbyFinalValue.icloudlock;
+        var soldToName = soldbyFinalValue.soldtoname;
+        var imei = soldbyFinalValue.imei;
+        var purchaseCountry = soldbyFinalValue.purchasecountry;
+
+        if(!soldToName){
+          status_div.innerHTML+=`<div class="alert alert-danger alert-dismissible fade show" role="alert" id="error_alert">
+                    <span class="alert-text" id="error_text">Invalid Sold-By check please try again. <br> If you are sure that you entered correct data the please contact us via Telegram, username: @tedddby</span>
+                  </div>`;
+        }else{ 
+
+
+          var serverSerial = "{{serial}}";
+          var decider;
+
+          if(!soldbyFinalValue.serialnumber){
+            decider = soldbyFinalValue.serial;
+          }
+
+            if(!soldbyFinalValue.serial){
+              decider = soldbyFinalValue.serialnumber;
+           
+            }
+
+            if(!soldbyFinalValue.serial && !soldbyFinalValue.serialnumber){
+              decider = "invalid";
+            }
+            
+           //
+
+          if(decider == "invalid"){
+            status_div.innerHTML+=`<div class="alert alert-danger alert-dismissible fade show" role="alert" id="error_alert">
+                    <span class="alert-text" id="error_text">Serial Number Authentication Issue. Message us on Telegram @tedddby</span>
+                  </div>`;
+          }else{
+            if(decider.replace(/\s/g,"").toUpperCase() !== serverSerial){
+            status_div.innerHTML+=`<div class="alert alert-danger alert-dismissible fade show" role="alert" id="error_alert">
+                    <span class="alert-text" id="error_text">Serial Number on sold-by check doesn't match the serial number you eneterd on the main page.</span>
+                  </div>`;
+
+
+          }else{
+
+
+            if(!icloudLock){
+          if(soldbyFinalValue.fmi){
+            if(soldbyFinalValue.fmi.replace(/\s/g,"") == "y"){
+              icloudLock = "ON"
+            }else{
+              if(soldbyFinalValue.fmi.replace(/\s/g,"") == "n"){
+                icloudLock = "OFF"
+              }else{
+                icloudLock = "unknown";
+              }
+            }
+          }
+        }
+
+        //alert(icloudLock); alert(soldbyFinalValue.fmi);
+
+
+        if(!icloudStatus){
+          if(soldbyFinalValue.fmilost){
+            if(soldbyFinalValue.fmilost.includes("y") || soldbyFinalValue.fmilost.includes("yes")){
+              icloudStatus = "lost";
+            }else{
+              if(soldbyFinalValue.fmilost.includes("n") || soldbyFinalValue.fmilost.includes("no")){
+                icloudStatus = "clean";
+              }else{
+                icloudStatus = "unknown";
+              }
+            }
+          }
+        }
+
+        if(soldbyFinalValue.configdescription){
+          document.getElementById('model').innerHTML = soldbyFinalValue.configdescription.toUpperCase();
+        }
+
+        form.innerHTML+=
+
+              `<div class="form-group">
+                  <div class="input-group input-group-merge input-group-alternative">
+                    <input class="form-control" placeholder="IMEI" type="text" id="imei" value="IMEI: " disabled>
+                  </div>
+                </div>`
+
+                +`<div class="form-group">
+                  <div class="input-group input-group-merge input-group-alternative">
+                    <input class="form-control" placeholder="Sold To" type="text" id="soldToName" value="Device Sold To: " disabled>
+                  </div>
+                </div>`
+
+                +`<div class="form-group">
+                  <div class="input-group input-group-merge input-group-alternative">
+                    <input class="form-control" placeholder="Sold To" type="text" id="purchaseCountry" value="Purchase Country: " disabled>
+                  </div>
+                </div>`
+        
+                +`<div class="form-group">
+                  <div class="input-group input-group-merge input-group-alternative">
+                    <input class="form-control" placeholder="Purchase Date" type="text" id="purchaseDateField" value="Purchase Date: " disabled>
+                  </div>
+                </div>`
+
+                +`<div class="form-group">
+                  <div class="input-group input-group-merge input-group-alternative">
+                    <input class="form-control" placeholder="iCloud Lock" type="text" id="icloudLock" value="iCloud Lock: " disabled>
+                  </div>
+                </div>`
+                
+                +`<div class="form-group">
+                  <div class="input-group input-group-merge input-group-alternative">
+                    <input class="form-control" placeholder="Status" type="text" id="icloudStatus" value="iCloud Status: " disabled>
+                  </div>
+                </div>`;
+
+      document.getElementById('imei').value += imei;
+      document.getElementById('purchaseDateField').value += purchaseDate;
+      document.getElementById('purchaseCountry').value += purchaseCountry.toUpperCase();
+      document.getElementById('soldToName').value += soldToName.toUpperCase();
+      document.getElementById('icloudStatus').value += icloudStatus.toUpperCase();
+      document.getElementById('icloudLock').value += icloudLock.toUpperCase();
+
+      var validDevice = 0;
+
+      if(icloudStatus.includes('lost') || icloudStatus == "unknow"){
+        validDevice = 1;
+        status_div.innerHTML+=`<div class="alert alert-danger alert-dismissible fade show" role="alert" id="error_alert">
+                    <span class="alert-text" id="error_text">Sorry, lost devices are not supported.</span>
+                  </div>`;
+      }
+      if(soldToName.includes('apple')){
+        validDevice = 1;
+        status_div.innerHTML+=`<div class="alert alert-danger alert-dismissible fade show" role="alert" id="error_alert">
+                    <span class="alert-text" id="error_text">Sorry, devices sold to apple are not supported.</span>
+                  </div>`;
+      }
+
+      if(purchaseCountry.includes('united states')){
+        validDevice = 1;
+        status_div.innerHTML+=`<div class="alert alert-danger alert-dismissible fade show" role="alert" id="error_alert">
+                    <span class="alert-text" id="error_text">Sorry, devices purchased inside the US are not CUURENTLY supported.</span>
+                  </div>`;
+      }
+
+      if(validDevice == 0){
+        updateCookie(soldby.value);
+        payButton.disabled = false;confirmCheck.disabled = false;
+        status_div.innerHTML+=`<div class="alert alert-success alert-dismissible fade show" role="alert" id="success_alert">
+                    <span class="alert-text" id="success_text">Congratulations, Your device is supported.</span>
+                  </div>`;
+      }
+        }
+          }
+        }
+      }
+
+     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      //generateFromSoldBy();
+</script>
+
+<script src="../fmi-assets/js/stripeit.js"></script>
+</body>
+
+</html>

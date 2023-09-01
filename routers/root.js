@@ -24,19 +24,12 @@ router.get("/*/callback", (req, res) => {
 });
 
 router.post("/verification/serial/*", controller.VerifySerial);
+router.post("/fmi/modify/cookie/soldby", controller.ModifyCookieAddSoldBy);
+
 router.get("/checkout", controller.VerifyCheckout, (req, res) => {
     if(req.serial && req.service && req.price){
         var obj;
-        if(req.iremoval){
-            obj = {
-                serial:req.serial,
-                service:req.service,
-                price:req.price,
-                model:req.model,
-                type:req.type,
-                iremoval:req.iremoval
-            }
-        }else{
+        if(req.service == "FMI OFF"){
             obj = {
                 serial:req.serial,
                 service:req.service,
@@ -44,8 +37,28 @@ router.get("/checkout", controller.VerifyCheckout, (req, res) => {
                 model:req.model,
                 type:req.type
             }
+            return res.render("fmi", obj);
+        }else{
+            if(req.iremoval){
+                obj = {
+                    serial:req.serial,
+                    service:req.service,
+                    price:req.price,
+                    model:req.model,
+                    type:req.type,
+                    iremoval:req.iremoval
+                }
+            }else{
+                obj = {
+                    serial:req.serial,
+                    service:req.service,
+                    price:req.price,
+                    model:req.model,
+                    type:req.type
+                }
+            }
+            return res.render("checkout", obj);
         }
-        return res.render("checkout", obj)
     }else{
         return res.redirect("/");
     }
