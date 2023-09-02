@@ -23,12 +23,24 @@ const GenerateSession = async (req, res) => {
                 stripe = require("stripe")(envData.stripeKey);
             }
 
-            const accessToken = jwt.sign({
-                Service:decoded.Service,
-                SerialNumber:decoded.SerialNumber,
-                Price:decoded.Price,
-                Model:decoded.Model
-            }, envData.jwtKey, {expiresIn: 30 * 60 * 1000});
+            var accessToken;
+
+            if(decoded.SoldBy){
+                accessToken = jwt.sign({
+                    Service:decoded.Service,
+                    SerialNumber:decoded.SerialNumber,
+                    Price:decoded.Price,
+                    Model:decoded.Model,
+                    SoldBy:decoded.SoldBy
+                }, envData.jwtKey, {expiresIn: 30 * 60 * 1000});
+            }else{
+                accessToken = jwt.sign({
+                    Service:decoded.Service,
+                    SerialNumber:decoded.SerialNumber,
+                    Price:decoded.Price,
+                    Model:decoded.Model
+                }, envData.jwtKey, {expiresIn: 30 * 60 * 1000});
+            }
 
 
             if(decoded.Price){
