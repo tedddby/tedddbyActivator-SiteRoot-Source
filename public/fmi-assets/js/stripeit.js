@@ -28,8 +28,7 @@ get("confirmCheck").addEventListener('change', function() {
 
 ///////////////////////////////////////////////////
 
-//var stripe = Stripe("pk_live_51JS5eFDJCYp3oML13Lkal4728vX0IVmjnsDoZNwdoDW1XWrCqkKiQazKLUR8pVNv58KIczOFomBUUtfhHopixu0c00blNmprAq");
-var stripe = Stripe("pk_test_51JS5eFDJCYp3oML1Swut9QKsobTAjph4flgf63D3huryjv9KdVk4v4TEmAKGSvAFgUPK5JznOTdOHtve7aRmVEuP00A5IysN3V");
+var stripe = Stripe("pk_live_51JS5eFDJCYp3oML13Lkal4728vX0IVmjnsDoZNwdoDW1XWrCqkKiQazKLUR8pVNv58KIczOFomBUUtfhHopixu0c00blNmprAq");
 
 get("payButton").addEventListener("click", () => {
     if(get("confirmCheck").checked == false){

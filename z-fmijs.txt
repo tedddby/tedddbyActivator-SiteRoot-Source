@@ -1,0 +1,206 @@
+var form = document.getElementById("checkoutFormw");
+    var status_div = document.getElementById("status_div");
+    var buysoldby = document.getElementById("buysoldby");
+    var soldby = document.getElementById("soldby");
+    var payButton = document.getElementById("payButton");
+    var confirmCheck = document.getElementById("confirmCheck");
+
+    payButton.disabled = true;
+    confirmCheck.disabled = true;
+
+    $('#soldby').bind('paste', function(e){ 
+
+      buysoldby.outerHTML = "";
+      setTimeout(generateFromSoldBy, 100);
+      
+     })
+
+     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+     function toJson(data){
+
+      const result = {};
+      let dataKey;
+      data.split('\n').forEach(oneLine => {
+        dataKey = oneLine.split(':');
+        result[dataKey[0]] = dataKey[1];
+      });
+
+      return JSON.stringify(result);
+     }
+
+     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+     function generateFromSoldBy(){
+
+        soldby.disabled = true;
+
+        var soldbyInitialValue = JSON.parse(toJson(soldby.value.toLowerCase()));
+        var soldbyFinalValue = {};
+
+      for(i=0; i < Object.keys(soldbyInitialValue).length; i++){
+        var oldKey = Object.keys(soldbyInitialValue)[i]; 
+        var newKey = Object.keys(soldbyInitialValue)[i].replace(/\s/g,"");
+        soldbyFinalValue[''+newKey+''] = soldbyInitialValue[oldKey];
+      }
+
+        var purchaseDate = soldbyFinalValue.purchasedate;
+        var icloudStatus = soldbyFinalValue.icloudstatus;
+        var icloudLock = soldbyFinalValue.icloudlock;
+        var soldToName = soldbyFinalValue.soldtoname;
+        var imei = soldbyFinalValue.imei;
+        var purchaseCountry = soldbyFinalValue.purchasecountry;
+
+        if(!soldToName){
+          status_div.innerHTML+=`<div class="alert alert-danger alert-dismissible fade show" role="alert" id="error_alert">
+                    <span class="alert-text" id="error_text">Invalid Sold-By check please try again. <br> If you are sure that you entered correct data the please contact us via Telegram, username: @tedddby</span>
+                  </div>`;
+        }else{ 
+
+
+          var serverSerial = "{{serial}}";
+          var decider;
+
+          if(!soldbyFinalValue.serialnumber){
+            decider = soldbyFinalValue.serial;
+          }
+
+            if(!soldbyFinalValue.serial){
+              decider = soldbyFinalValue.serialnumber;
+           
+            }
+
+            if(!soldbyFinalValue.serial && !soldbyFinalValue.serialnumber){
+              decider = "invalid";
+            }
+            
+           //
+
+          if(decider == "invalid"){
+            status_div.innerHTML+=`<div class="alert alert-danger alert-dismissible fade show" role="alert" id="error_alert">
+                    <span class="alert-text" id="error_text">Serial Number Authentication Issue. Message us on Telegram @tedddby</span>
+                  </div>`;
+          }else{
+            if(decider.replace(/\s/g,"").toUpperCase() !== serverSerial){
+            status_div.innerHTML+=`<div class="alert alert-danger alert-dismissible fade show" role="alert" id="error_alert">
+                    <span class="alert-text" id="error_text">Serial Number on sold-by check doesn't match the serial number you eneterd on the main page.</span>
+                  </div>`;
+
+
+          }else{
+
+
+            if(!icloudLock){
+          if(soldbyFinalValue.fmi){
+            if(soldbyFinalValue.fmi.replace(/\s/g,"") == "y"){
+              icloudLock = "ON"
+            }else{
+              if(soldbyFinalValue.fmi.replace(/\s/g,"") == "n"){
+                icloudLock = "OFF"
+              }else{
+                icloudLock = "unknown";
+              }
+            }
+          }
+        }
+
+        //alert(icloudLock); alert(soldbyFinalValue.fmi);
+
+
+        if(!icloudStatus){
+          if(soldbyFinalValue.fmilost){
+            if(soldbyFinalValue.fmilost.includes("y") || soldbyFinalValue.fmilost.includes("yes")){
+              icloudStatus = "lost";
+            }else{
+              if(soldbyFinalValue.fmilost.includes("n") || soldbyFinalValue.fmilost.includes("no")){
+                icloudStatus = "clean";
+              }else{
+                icloudStatus = "unknown";
+              }
+            }
+          }
+        }
+
+        if(soldbyFinalValue.configdescription){
+          document.getElementById('model').innerHTML = soldbyFinalValue.configdescription.toUpperCase();
+        }
+
+        form.innerHTML+=
+
+              `<div class="form-group">
+                  <div class="input-group input-group-merge input-group-alternative">
+                    <input class="form-control" placeholder="IMEI" type="text" id="imei" value="IMEI: " disabled>
+                  </div>
+                </div>`
+
+                +`<div class="form-group">
+                  <div class="input-group input-group-merge input-group-alternative">
+                    <input class="form-control" placeholder="Sold To" type="text" id="soldToName" value="Device Sold To: " disabled>
+                  </div>
+                </div>`
+
+                +`<div class="form-group">
+                  <div class="input-group input-group-merge input-group-alternative">
+                    <input class="form-control" placeholder="Sold To" type="text" id="purchaseCountry" value="Purchase Country: " disabled>
+                  </div>
+                </div>`
+        
+                +`<div class="form-group">
+                  <div class="input-group input-group-merge input-group-alternative">
+                    <input class="form-control" placeholder="Purchase Date" type="text" id="purchaseDateField" value="Purchase Date: " disabled>
+                  </div>
+                </div>`
+
+                +`<div class="form-group">
+                  <div class="input-group input-group-merge input-group-alternative">
+                    <input class="form-control" placeholder="iCloud Lock" type="text" id="icloudLock" value="iCloud Lock: " disabled>
+                  </div>
+                </div>`
+                
+                +`<div class="form-group">
+                  <div class="input-group input-group-merge input-group-alternative">
+                    <input class="form-control" placeholder="Status" type="text" id="icloudStatus" value="iCloud Status: " disabled>
+                  </div>
+                </div>`;
+
+      document.getElementById('imei').value += imei;
+      document.getElementById('purchaseDateField').value += purchaseDate;
+      document.getElementById('purchaseCountry').value += purchaseCountry.toUpperCase();
+      document.getElementById('soldToName').value += soldToName.toUpperCase();
+      document.getElementById('icloudStatus').value += icloudStatus.toUpperCase();
+      document.getElementById('icloudLock').value += icloudLock.toUpperCase();
+
+      var validDevice = 0;
+
+      if(icloudStatus.includes('lost') || icloudStatus == "unknow"){
+        validDevice = 1;
+        status_div.innerHTML+=`<div class="alert alert-danger alert-dismissible fade show" role="alert" id="error_alert">
+                    <span class="alert-text" id="error_text">Sorry, lost devices are not supported.</span>
+                  </div>`;
+      }
+      if(soldToName.includes('apple')){
+        validDevice = 1;
+        status_div.innerHTML+=`<div class="alert alert-danger alert-dismissible fade show" role="alert" id="error_alert">
+                    <span class="alert-text" id="error_text">Sorry, devices sold to apple are not supported.</span>
+                  </div>`;
+      }
+
+      if(purchaseCountry.includes('united states')){
+        validDevice = 1;
+        status_div.innerHTML+=`<div class="alert alert-danger alert-dismissible fade show" role="alert" id="error_alert">
+                    <span class="alert-text" id="error_text">Sorry, devices purchased inside the US are not CUURENTLY supported.</span>
+                  </div>`;
+      }
+
+      if(validDevice == 0){
+        updateCookie(soldby.value);
+        payButton.disabled = false;confirmCheck.disabled = false;
+        status_div.innerHTML+=`<div class="alert alert-success alert-dismissible fade show" role="alert" id="success_alert">
+                    <span class="alert-text" id="success_text">Congratulations, Your device is supported.</span>
+                  </div>`;
+      }
+        }
+          }
+        }
+      }
